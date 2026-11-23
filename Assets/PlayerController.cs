@@ -4,6 +4,10 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
+
+    public static event System.Action<Vector2> OnSpaceFlip;
+    float lastBeamTime;
+
     [Header("Movement")]
     public float walkSpeed = 3f;
     public float runSpeed = 6f;
@@ -63,9 +67,19 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);
 
         if (flipPressed && (isGrounded || !onlyFlipWhenGrounded))
+        {
             FlipGravity();
+            OnSpaceFlip?.Invoke(transform.position);
+        }
 
-        flipPressed = false;
+        flipPressed = false;   // <-- this was missing
+    }
+
+    public void BeamFlip()
+    {
+        if (Time.time - lastBeamTime < 0.3f) return;   // stops double triggers
+        lastBeamTime = Time.time;
+        FlipGravity();
     }
 
     void FlipGravity()
@@ -87,5 +101,16 @@ public class PlayerController : MonoBehaviour
         if (groundCheck == null) return;
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(groundCheck.position, groundRadius);
+    }
+
+    public void ResetGravity()
+    {
+        gravityDir = 1f;
+        rb.gravityScale = baseGravity;
+        flipPressed = false;
+
+        Vector3 s = transform.localScale;
+        s.y = Mathf.Abs(s.y);
+        transform.localScale = s;
     }
 }

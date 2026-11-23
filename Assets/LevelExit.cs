@@ -21,11 +21,17 @@ public class LevelExit : MonoBehaviour
 
         used = true;
 
+        // Put gravity back to normal first, so the player isn't upside down in the new level
+        player.ResetGravity();
+
         // Teleport
         var rb = player.GetComponent<Rigidbody2D>();
         rb.linearVelocity = Vector2.zero;
         rb.position = nextLevelStart.position;
         player.transform.position = nextLevelStart.position;
+
+        // New checkpoint for dying in this level
+        player.GetComponent<PlayerRespawn>().SetRespawn(nextLevelStart.position);
 
         // Move camera
         StartCoroutine(MoveCamera());
