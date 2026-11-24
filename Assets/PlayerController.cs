@@ -20,6 +20,13 @@ public class PlayerController : MonoBehaviour
     public float groundRadius = 0.15f;
     public LayerMask groundLayer;
 
+    [Header("Manual Reset")]
+    public float resetHoldTime = 1.5f;
+
+    PlayerRespawn respawn;
+    float resetHeld;
+    bool resetDone;
+
     Rigidbody2D rb;
     Animator anim;
     SpriteRenderer sr;
@@ -38,6 +45,7 @@ public class PlayerController : MonoBehaviour
         anim = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
         baseGravity = rb.gravityScale;
+        respawn = GetComponent<PlayerRespawn>();
     }
 
     void Update()
@@ -45,6 +53,21 @@ public class PlayerController : MonoBehaviour
         var kb = Keyboard.current;
         if (kb == null) return;
 
+        // Hold R to reset the level
+    if (kb.rKey.isPressed)
+    {
+        resetHeld += Time.deltaTime;
+        if (!resetDone && resetHeld >= resetHoldTime)
+        {
+            resetDone = true;   // only fires once per hold
+            respawn.Die();
+        }
+    }
+        else
+    {
+        resetHeld = 0f;
+        resetDone = false;
+    }
         moveInput = 0f;
         if (kb.aKey.isPressed || kb.leftArrowKey.isPressed)  moveInput -= 1f;
         if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) moveInput += 1f;
